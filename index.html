@@ -2,1207 +2,660 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="BillKaro">
-<meta name="description" content="Professional Offline + Online Billing System for Indian Businesses">
+<meta name="description" content="Professional GST Billing Software">
 <title>BillKaro — Smart Billing</title>
-
-<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
-
-<!-- Apple Touch Icons -->
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-<!-- CSS -->
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.2.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- ===== LOADING OVERLAY ===== -->
-<div class="loading-overlay" id="loading-overlay">
-  <div style="text-align:center">
-    <div style="font-size:32px;font-weight:800;color:var(--accent);letter-spacing:-1px;margin-bottom:16px">BillKaro</div>
-    <div class="loading-spinner"></div>
-    <div class="loading-text" style="margin-top:12px">Loading...</div>
-  </div>
-</div>
+<!-- Offline bar -->
+<div id="offline-bar">⚠ Aap offline hain — data safe hai, internet aane par sync hoga</div>
 
-<!-- ===== LOGIN / SETUP SCREEN ===== -->
-<div id="login-screen" style="display:none">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="mark">🧾 BillKaro</div>
-      <div class="sub">Professional Billing System</div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="login-tabs">
-      <div class="login-tab active" data-tab="email" onclick="this.parentNode.querySelectorAll('.login-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');document.getElementById('lt-email').style.display='block';document.getElementById('lt-mobile').style.display='none';document.getElementById('lt-setup').style.display='none'">
-        Email Login
-      </div>
-      <div class="login-tab" data-tab="mobile" onclick="this.parentNode.querySelectorAll('.login-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');document.getElementById('lt-email').style.display='none';document.getElementById('lt-mobile').style.display='block';document.getElementById('lt-setup').style.display='none'">
-        Mobile OTP
-      </div>
-      <div class="login-tab" id="login-tab-setup" data-tab="setup" onclick="this.parentNode.querySelectorAll('.login-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');document.getElementById('lt-email').style.display='none';document.getElementById('lt-mobile').style.display='none';document.getElementById('lt-setup').style.display='block'">
-        First Setup
-      </div>
-    </div>
-
-    <!-- Email Login -->
-    <div id="lt-email">
-      <div class="fc" style="margin-bottom:10px">
-        <label class="lbl">Email</label>
-        <input type="email" id="l-email" placeholder="aapka@email.com">
-      </div>
-      <div class="fc" style="margin-bottom:10px">
-        <label class="lbl">Password</label>
-        <input type="password" id="l-pass" placeholder="Password" onkeydown="if(event.key==='Enter')BK_APP.doLogin()">
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <input type="checkbox" id="l-remember" style="width:16px;height:16px">
-        <label for="l-remember" style="font-size:13px;cursor:pointer">Mujhe yaad rakho</label>
-      </div>
-      <div id="login-error" style="color:var(--red-text);font-size:12px;min-height:16px;margin-bottom:8px"></div>
-      <button class="btn btn-p btn-full btn-lg" onclick="BK_APP.doLogin()">🔐 Login</button>
-    </div>
-
-    <!-- Mobile OTP Login -->
-    <div id="lt-mobile" style="display:none">
-      <div class="fc" style="margin-bottom:10px">
-        <label class="lbl">Mobile Number</label>
-        <input type="tel" id="l-mobile" placeholder="10-digit mobile" maxlength="10">
-      </div>
-      <div id="otp-row" style="display:none;margin-bottom:10px">
-        <label class="lbl">OTP</label>
-        <input type="text" id="l-otp" placeholder="6-digit OTP" maxlength="6">
-        <div id="l-otp-info" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
-      </div>
-      <div id="login-error" style="color:var(--red-text);font-size:12px;min-height:16px;margin-bottom:8px"></div>
-      <button class="btn btn-p btn-full btn-lg" onclick="BK_APP.doLogin()">📱 OTP Bhejo / Verify</button>
-    </div>
-
-    <!-- First Setup -->
-    <div id="lt-setup" style="display:none">
-      <div class="info-box">👋 Welcome! Pehli baar setup karo — Admin account banao</div>
-      <div class="fc" style="margin-bottom:10px">
-        <label class="lbl">Dukaan / Business Naam *</label>
-        <input type="text" id="s-shop-name" placeholder="Ram Stationery Store">
-      </div>
-      <div class="frow">
-        <div class="fc">
-          <label class="lbl">Email</label>
-          <input type="email" id="s-email" placeholder="admin@email.com">
-        </div>
-        <div class="fc">
-          <label class="lbl">Mobile</label>
-          <input type="tel" id="s-mobile" placeholder="10-digit" maxlength="10">
-        </div>
-      </div>
-      <div class="frow">
-        <div class="fc">
-          <label class="lbl">Password</label>
-          <input type="password" id="s-password" placeholder="Min 6 characters">
-        </div>
-        <div class="fc">
-          <label class="lbl">Confirm Password</label>
-          <input type="password" id="s-confirm" placeholder="Dobara daalo">
-        </div>
-      </div>
-      <div id="setup-error" style="color:var(--red-text);font-size:12px;min-height:16px;margin-bottom:8px"></div>
-      <button class="btn btn-s btn-full btn-lg" onclick="BK_APP.doSetup()">🚀 Setup Shuru Karo</button>
-    </div>
-
-    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--text3)">
-      BillKaro v2.0 · Offline-First PWA · Made in India 🇮🇳
-    </div>
-  </div>
-</div>
-
-<!-- ===== MAIN APP WRAPPER ===== -->
-<div id="app-wrapper" class="app" style="display:none">
-
-  <!-- Sidebar Overlay (mobile) -->
-  <div id="sidebar-overlay" onclick="BK_APP.closeSidebar()"></div>
-
-  <!-- ===== SIDEBAR ===== -->
-  <aside class="sidebar" id="sidebar">
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
     <div class="logo">
-      <div class="logo-mark">🧾 BillKaro</div>
-      <div id="sb-shop" class="logo-sub">Professional Billing</div>
-      <div class="logo-version">v2.0 · PWA</div>
+      <div class="logo-mark"><i class="ti ti-receipt-2"></i><span id="sb-shop">BillKaro</span></div>
+      <div class="logo-sub">Smart GST Billing</div>
     </div>
-
     <nav class="nav">
       <div class="nav-section">Main</div>
-      <div class="ni active" data-screen="dashboard" onclick="BK_APP.navigate('dashboard')">
-        <span class="ni-icon">📊</span> Dashboard
-      </div>
-      <div class="ni" data-screen="billing" onclick="BK_APP.navigate('billing')">
-        <span class="ni-icon">🧾</span> Naya Bill
-      </div>
-      <div class="ni" data-screen="bills" onclick="BK_APP.navigate('bills')">
-        <span class="ni-icon">📋</span> Bills
-      </div>
-
+      <div class="ni active" data-screen="dashboard" onclick="go('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+      <div class="ni" data-screen="billing" onclick="go('billing')"><i class="ti ti-file-plus"></i> Naya Bill</div>
+      <div class="ni" data-screen="bills" onclick="go('bills')"><i class="ti ti-files"></i> Bills</div>
       <div class="nav-section">Manage</div>
-      <div class="ni" data-screen="customers" onclick="BK_APP.navigate('customers')">
-        <span class="ni-icon">👥</span> Customers
-      </div>
-      <div class="ni" data-screen="products" onclick="BK_APP.navigate('products')">
-        <span class="ni-icon">📦</span> Products
-      </div>
-      <div class="ni" data-screen="dues" onclick="BK_APP.navigate('dues')">
-        <span class="ni-icon">💰</span> Due List
-        <span class="ni-badge" id="due-badge" style="display:none"></span>
-      </div>
-
-      <div class="nav-section">Analytics</div>
-      <div class="ni" data-screen="reports" onclick="BK_APP.navigate('reports')">
-        <span class="ni-icon">📈</span> Reports
-      </div>
-
+      <div class="ni" data-screen="customers" onclick="go('customers')"><i class="ti ti-users"></i> Customers</div>
+      <div class="ni" data-screen="products" onclick="go('products')"><i class="ti ti-box"></i> Products</div>
+      <div class="ni" data-screen="dues" onclick="go('dues')"><i class="ti ti-alert-circle"></i> Due List</div>
       <div class="nav-section">System</div>
-      <div class="ni" data-screen="settings" onclick="BK_APP.navigate('settings')">
-        <span class="ni-icon">⚙️</span> Settings
-      </div>
+      <div class="ni" data-screen="settings" onclick="go('settings')"><i class="ti ti-settings"></i> Settings</div>
     </nav>
-
-    <!-- Online/Sync Status -->
-    <div style="padding:8px 12px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border)">
-      <span id="online-indicator" style="font-size:11px;font-weight:600">● Online</span>
-      <div id="sync-spinner"></div>
-      <span id="sync-badge" class="badge br" style="display:none;font-size:9px">Offline</span>
+    <div style="padding:12px 16px;border-top:1px solid var(--border)">
+      <button class="btn btn-g btn-sm btn-full" onclick="exportDB()"><i class="ti ti-download"></i> Backup</button>
     </div>
+  </div>
 
-    <!-- User Chip -->
-    <div class="sidebar-footer">
-      <div class="user-chip" onclick="BK_APP.openModal('m-profile')">
-        <div class="user-avatar" id="user-avatar">A</div>
-        <div>
-          <div class="user-name" id="user-name">Admin</div>
-          <div class="user-role" id="user-role">admin</div>
-        </div>
-        <span style="margin-left:auto;color:var(--text3);font-size:14px">⚙</span>
-      </div>
-    </div>
-  </aside>
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
-  <!-- ===== MAIN CONTENT ===== -->
-  <main class="main">
-
+  <!-- MAIN -->
+  <div class="main">
     <!-- Topbar -->
     <div class="topbar">
       <div class="topbar-left">
-        <button class="hamburger" onclick="BK_APP.openSidebar()">☰</button>
-        <div class="topbar-title">
-          <div class="tt" id="tt">Dashboard</div>
-          <div class="ts" id="ts">Aaj ka overview</div>
-        </div>
+        <button class="menu-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2" style="font-size:20px"></i></button>
+        <div><div class="tt" id="tt">Dashboard</div><div class="ts" id="ts">Aaj ka overview</div></div>
       </div>
-      <div class="topbar-actions">
-        <button class="btn btn-g btn-sm" id="install-btn" onclick="BK_APP.installPWA()" title="Install App" style="display:none">
-          📲 Install
-        </button>
-        <button class="btn btn-p btn-sm" onclick="BK_APP.navigate('billing')">
-          + Naya Bill
-        </button>
+      <div class="topbar-right">
+        <div id="online-dot" style="width:8px;height:8px;border-radius:50%;background:var(--green)" title="Online"></div>
+        <button class="btn btn-p btn-sm" onclick="go('billing')"><i class="ti ti-plus"></i> Naya Bill</button>
       </div>
     </div>
 
-    <!-- ===== SCREENS ===== -->
+    <!-- CONTENT -->
     <div class="content">
 
-      <!-- ========== DASHBOARD ========== -->
+      <!-- ===== DASHBOARD ===== -->
       <div class="screen active" id="sc-dashboard">
-        <div id="dash-stats" class="sgrid"></div>
-
+        <div class="sgrid" id="dash-stats"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-          <!-- Today's Bills -->
           <div class="card">
-            <div class="ctitle">
-              🧾 Aaj ke Bills
-              <div class="ctitle-actions">
-                <button class="btn btn-g btn-sm" onclick="BK_APP.navigate('bills')">Sab Dekho</button>
-              </div>
-            </div>
-            <div id="dash-tb"></div>
+            <div class="ctitle"><i class="ti ti-calendar-today"></i> Aaj ke bills</div>
+            <div id="dash-tb"><div style="color:var(--text3);font-size:13px">Loading...</div></div>
           </div>
-          <!-- Due Customers -->
           <div class="card">
-            <div class="ctitle">
-              💰 Due Customers
-              <div class="ctitle-actions">
-                <button class="btn btn-g btn-sm" onclick="BK_APP.navigate('dues')">Sab Dekho</button>
-              </div>
-            </div>
-            <div id="dash-dl"></div>
+            <div class="ctitle"><i class="ti ti-alert-circle"></i> Due wale customers</div>
+            <div id="dash-dl"><div style="color:var(--text3);font-size:13px">Loading...</div></div>
           </div>
         </div>
-
-        <!-- Sales Chart -->
-        <div class="card" style="margin-bottom:14px">
-          <div class="ctitle">📈 Pichhle 7 Din ki Sales</div>
-          <div class="chart-wrap" style="height:220px">
-            <canvas id="sales-chart" style="width:100%;height:220px"></canvas>
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px">
           <div class="card">
-            <div class="ctitle">🥇 Top Customers</div>
-            <div id="top-customers"></div>
+            <div class="ctitle"><i class="ti ti-chart-bar"></i> Last 7 days sales</div>
+            <div class="chart-wrap"><canvas id="sales-chart"></canvas></div>
           </div>
           <div class="card">
-            <div class="ctitle">🔥 Top Products</div>
-            <div id="top-products"></div>
+            <div class="ctitle"><i class="ti ti-crown"></i> Top customers</div>
+            <div id="dash-top-custs"></div>
           </div>
         </div>
       </div>
 
-      <!-- ========== BILLING ========== -->
+      <!-- ===== BILLING ===== -->
       <div class="screen" id="sc-billing">
-        <div style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start">
-
-          <!-- Left: Bill Form -->
+        <div class="bill-grid" style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start">
+          <!-- Left -->
           <div>
-            <!-- Customer + Date Row -->
             <div class="card">
-              <div class="ctitle">👤 Customer & Date</div>
+              <div class="ctitle"><i class="ti ti-user-search"></i> Customer</div>
               <div class="frow">
-                <div class="fc fc3">
-                  <label class="lbl">Customer (ya Walk-in)</label>
-                  <div class="acw">
-                    <input type="text" id="bc-search" placeholder="Name ya mobile se dhundo..." autocomplete="off"
-                      oninput="BK_BILLING.customerSearch(this.value)"
-                      onblur="setTimeout(BK_BILLING.hideDropdown,200)">
-                    <div id="cdrop" class="acd"></div>
-                  </div>
-                  <!-- Customer Info Box -->
-                  <div class="cfd" id="cfd">
-                    <div style="display:flex;justify-content:space-between;align-items:start">
-                      <div>
-                        <span style="font-weight:700;font-size:14px" id="cf-n"></span>
-                        <span style="color:var(--text3);font-size:12px;margin-left:8px" id="cf-m"></span>
-                        <div id="cf-rb" style="margin-top:4px"></div>
-                      </div>
-                      <button class="btn btn-g btn-sm btn-ic" onclick="BK_BILLING.resetBill()" title="Customer hatao">×</button>
-                    </div>
-                  </div>
-                  <!-- Due Box -->
-                  <div class="dueb" id="dueb">
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                      <div>
-                        <span style="font-size:12px;font-weight:700;color:var(--red-text)">⚠ Pichla Due:</span>
-                        <span class="mono fw-700 text-red" id="due-at" style="margin-left:6px"></span>
-                        <span style="font-size:11px;color:var(--text3);margin-left:6px" id="due-pm"></span>
-                      </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-                      <div style="flex:1">
-                        <label class="lbl">Is bill mein due payment collect karo</label>
-                        <input type="number" id="p-now" min="0" step="0.5" placeholder="0" oninput="BK_BILLING.calcBill()">
-                      </div>
-                      <button class="btn btn-s btn-sm" style="margin-top:18px" onclick="BK_BILLING.collectFull()">Full Clear</button>
-                    </div>
-                  </div>
+                <div class="fc acw">
+                  <label class="lbl">Naam ya Mobile</label>
+                  <input type="text" id="bc-search" placeholder="Ram ya 9876543210..." autocomplete="off"
+                    oninput="csearch(this.value)" onblur="setTimeout(hdrop,200)">
+                  <div class="acd" id="cdrop"></div>
                 </div>
-                <div class="fc">
+                <div class="fc" style="max-width:165px">
                   <label class="lbl">Bill Date</label>
-                  <input type="date" id="bdate" onchange="BK_BILLING.calcBill()">
+                  <input type="date" id="bdate">
                 </div>
+              </div>
+              <!-- Customer found box -->
+              <div class="cfd" id="cfd">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                  <div>
+                    <span style="font-weight:600" id="cf-n"></span>
+                    <span style="color:var(--text2);font-size:12px;margin-left:8px" id="cf-m"></span>
+                    <span style="margin-left:8px" id="cf-rb"></span>
+                  </div>
+                  <span id="cf-db"></span>
+                </div>
+              </div>
+              <!-- Due box -->
+              <div class="dueb" id="dueb">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                  <div>
+                    <i class="ti ti-alert-circle" style="color:var(--red-text);vertical-align:-2px"></i>
+                    <span style="font-weight:600;color:var(--red-text)"> Pichla baki: </span>
+                    <span id="due-at" style="font-weight:600;color:var(--red-text);font-family:'DM Mono',monospace"></span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="font-size:12px;color:var(--text2)">Abhi lo:</span>
+                    <input type="number" id="p-now" placeholder="0" min="0" style="width:90px" oninput="calcb()">
+                    <button class="btn btn-g btn-sm" onclick="cfull()">Poora</button>
+                  </div>
+                </div>
+                <div id="due-pm" style="font-size:11px;color:var(--amber-text);margin-top:5px"></div>
               </div>
             </div>
 
-            <!-- Items Table -->
             <div class="card">
-              <div class="ctitle">
-                📦 Items
-                <div class="ctitle-actions">
-                  <button class="btn btn-p btn-sm" onclick="BK_BILLING.addRow()">+ Add Item</button>
-                </div>
+              <div class="ctitle" style="justify-content:space-between">
+                <span><i class="ti ti-list-details"></i> Items</span>
+                <button class="btn btn-p btn-sm" onclick="addrow()"><i class="ti ti-plus"></i> Item</button>
               </div>
-              <div class="tbl-wrap">
-                <table class="tbl">
+              <div class="tbl-scroll">
+                <table class="tbl" style="min-width:520px">
                   <thead>
                     <tr>
-                      <th>Product</th>
-                      <th style="text-align:right">Rate</th>
-                      <th style="text-align:center">Qty</th>
-                      <th style="text-align:right">Amount</th>
-                      <th style="text-align:center">GST%</th>
-                      <th></th>
+                      <th style="width:34%">Product</th>
+                      <th style="width:18%">Rate (₹)</th>
+                      <th style="width:11%">Qty</th>
+                      <th style="width:16%">Amount</th>
+                      <th style="width:10%">GST</th>
+                      <th style="width:11%"></th>
                     </tr>
                   </thead>
                   <tbody id="bitems"></tbody>
                 </table>
               </div>
-              <button class="btn btn-g btn-sm" style="margin-top:10px;width:100%" onclick="BK_BILLING.addRow()">
-                + Row Add Karo
-              </button>
-            </div>
-
-            <!-- Notes -->
-            <div class="card">
-              <label class="lbl">Bill Note (optional)</label>
-              <textarea id="bnote" placeholder="Koi note ya remark..." style="min-height:60px;margin-top:4px"></textarea>
+              <div style="margin-top:10px">
+                <input type="text" id="bnote" placeholder="Note / remarks (optional)">
+              </div>
             </div>
           </div>
 
-          <!-- Right: Bill Summary -->
-          <div style="position:sticky;top:70px">
+          <!-- Right: Summary -->
+          <div class="bill-summary-sticky" style="position:sticky;top:76px">
             <div class="card">
-              <div class="ctitle">🧾 Bill Summary</div>
-
-              <div class="sl"><span>Subtotal</span><span class="mono" id="s-sub">₹0</span></div>
-              <div class="sl" id="s-gstr" style="display:none"><span>GST</span><span class="mono text-amber" id="s-gst">₹0</span></div>
-              <div class="sl cl" id="s-crr" style="display:none"><span>Pichla Due</span><span class="mono" id="s-cr"></span></div>
-              <div class="sl pl" id="s-prr" style="display:none"><span>Due Payment</span><span class="mono" id="s-pr"></span></div>
-              <div class="sl tl"><span>TOTAL</span><span class="mono" id="s-tot">₹0</span></div>
-
-              <hr class="divider">
-
-              <!-- Payment -->
-              <div class="frow" style="margin-bottom:8px">
-                <div class="fc fc2">
-                  <label class="lbl">Received Amount</label>
-                  <input type="number" id="pamt" min="0" step="0.5" placeholder="0" oninput="BK_BILLING.calcBill()">
+              <div class="ctitle"><i class="ti ti-receipt"></i> Bill Summary</div>
+              <div class="sl"><span style="color:var(--text2)">Subtotal</span><span id="s-sub" style="font-family:'DM Mono',monospace">₹0</span></div>
+              <div class="sl" id="s-gstr" style="display:none"><span style="color:var(--text2)">GST</span><span id="s-gst" style="font-family:'DM Mono',monospace"></span></div>
+              <div class="sl cl" id="s-crr" style="display:none"><span>Pichla baki</span><span id="s-cr" style="font-family:'DM Mono',monospace"></span></div>
+              <div class="sl pl" id="s-prr" style="display:none"><span>Due se liya</span><span id="s-pr" style="font-family:'DM Mono',monospace"></span></div>
+              <div class="sl tl"><span>Aaj ka Total</span><span id="s-tot" style="font-family:'DM Mono',monospace;color:var(--accent)">₹0</span></div>
+              <div style="margin-top:12px">
+                <div class="frow">
+                  <div class="fc">
+                    <label class="lbl">Payment (₹)</label>
+                    <input type="number" id="pamt" placeholder="0" min="0" oninput="calcb()" style="font-family:'DM Mono',monospace">
+                  </div>
+                  <div class="fc" style="max-width:115px">
+                    <label class="lbl">Mode</label>
+                    <select id="pmode">
+                      <option>Cash</option><option>UPI</option><option>Card</option>
+                      <option>Bank</option><option>Credit</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="fc">
-                  <label class="lbl">Mode</label>
-                  <select id="pmode">
-                    <option>Cash</option>
-                    <option>UPI</option>
-                    <option>Card</option>
-                    <option>Cheque</option>
-                    <option>Bank Transfer</option>
-                    <option>Credit</option>
-                  </select>
-                </div>
+                <div class="sl pl" id="s-pdr" style="display:none"><span>Payment</span><span id="s-pd" style="font-family:'DM Mono',monospace"></span></div>
+                <div class="sl dl" id="s-ndr" style="display:none"><span>Naya baki</span><span id="s-nd" style="font-family:'DM Mono',monospace"></span></div>
               </div>
-
-              <div class="sl pl" id="s-pdr" style="display:none"><span>Paid</span><span class="mono" id="s-pd"></span></div>
-              <div class="sl dl" id="s-ndr" style="display:none"><span>New Due</span><span class="mono" id="s-nd"></span></div>
-
-              <hr class="divider">
-
-              <!-- Save Buttons -->
-              <button class="btn btn-s btn-full btn-lg" onclick="BK_BILLING.saveBill()">
-                💾 Bill Save Karo
+              <button class="btn btn-s btn-full btn-lg" style="margin-top:14px" onclick="savebill()">
+                <i class="ti ti-check"></i> Bill Save Karo
               </button>
-              <div style="display:flex;gap:8px;margin-top:8px">
-                <button class="btn btn-g btn-full" onclick="BK_BILLING.resetBill()">🔄 Reset</button>
-                <button class="btn btn-g btn-full" onclick="BK_APP.navigate('bills')">📋 Bills</button>
-              </div>
+              <button class="btn btn-g btn-full" style="margin-top:6px" onclick="resetb()">
+                <i class="ti ti-refresh"></i> Reset
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ========== BILLS LIST ========== -->
+      <!-- ===== BILLS LIST ===== -->
       <div class="screen" id="sc-bills">
-        <!-- Filters -->
-        <div class="card" style="margin-bottom:14px">
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-            <div class="fc fc2">
-              <label class="lbl">Search</label>
-              <input type="text" id="bsq" placeholder="Bill no, customer ya product..." oninput="BK_BILLING.renderBills()">
+        <div class="card">
+          <div class="search-bar">
+            <div class="input-icon-wrap" style="flex:1;max-width:280px">
+              <i class="ti ti-search"></i>
+              <input type="text" id="bsq" placeholder="Bill no ya customer naam..." oninput="rbills()">
             </div>
-            <div class="fc">
-              <label class="lbl">Status</label>
-              <select id="bsf" onchange="BK_BILLING.renderBills()">
-                <option value="">Sabhi</option>
-                <option value="paid">Paid</option>
-                <option value="due">Due Hai</option>
-              </select>
-            </div>
-            <div class="fc">
-              <label class="lbl">Date</label>
-              <input type="date" id="bdf" onchange="BK_BILLING.renderBills()">
-            </div>
-            <div class="fc">
-              <label class="lbl">Customer</label>
-              <input type="text" id="bcf" placeholder="Customer naam..." oninput="BK_BILLING.renderBills()">
-            </div>
-            <button class="btn btn-g btn-sm" onclick="['bsq','bdf','bcf'].forEach(id=>{document.getElementById(id).value=''});document.getElementById('bsf').value='';BK_BILLING.renderBills()">
-              Clear
+            <select id="bsf" onchange="rbills()" style="max-width:130px">
+              <option value="">Sab bills</option>
+              <option value="due">Baki wale</option>
+              <option value="paid">Paid</option>
+            </select>
+            <input type="date" id="bdf" onchange="rbills()" style="max-width:145px" title="From date">
+            <input type="date" id="bdt" onchange="rbills()" style="max-width:145px" title="To date">
+            <button class="btn btn-g btn-sm" onclick="document.getElementById('bdf').value='';document.getElementById('bdt').value='';rbills()">
+              <i class="ti ti-x"></i>
             </button>
           </div>
-        </div>
-
-        <div class="card" style="padding:0">
-          <div class="tbl-wrap">
-            <table class="tbl">
+          <div class="tbl-scroll">
+            <table class="tbl" style="min-width:700px">
               <thead>
                 <tr>
-                  <th>Bill No.</th>
-                  <th>Date</th>
-                  <th>Customer</th>
-                  <th>Total</th>
-                  <th>Paid</th>
-                  <th>Due</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>Bill No.</th><th>Date</th><th>Customer</th>
+                  <th>Amount</th><th>Paid</th><th>Baki</th><th>Status</th><th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="bbody">
-                <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">Loading...</td></tr>
-              </tbody>
+              <tbody id="bbody"></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ========== CUSTOMERS ========== -->
+      <!-- ===== CUSTOMERS ===== -->
       <div class="screen" id="sc-customers">
-        <div style="display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start">
-
-          <!-- Add Customer Form -->
-          <div class="card" style="position:sticky;top:70px">
-            <div class="ctitle">👤 Naya Customer Add Karo</div>
-            <div style="margin-bottom:8px">
-              <label class="lbl">Naam *</label>
-              <input type="text" id="nc-n" placeholder="Customer ka naam">
-            </div>
-            <div style="margin-bottom:8px">
-              <label class="lbl">Mobile</label>
-              <input type="tel" id="nc-m" placeholder="10-digit" maxlength="10">
-            </div>
-            <div style="margin-bottom:8px">
-              <label class="lbl">Address</label>
-              <input type="text" id="nc-a" placeholder="City, Area...">
-            </div>
-            <div style="margin-bottom:12px">
-              <label class="lbl">GSTIN (optional)</label>
-              <input type="text" id="nc-g" placeholder="GST number">
-            </div>
-            <div id="cm-msg" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-p btn-full" onclick="BK_APP.saveCustomer()">+ Save Customer</button>
-              <button class="btn btn-g" onclick="BK_APP.clearCustomerForm?.() || ['nc-n','nc-m','nc-a','nc-g'].forEach(id=>document.getElementById(id).value='')">Clear</button>
-            </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="ctitle"><i class="ti ti-user-plus"></i> Naya Customer / Party</div>
+          <div class="frow">
+            <div class="fc fc2"><label class="lbl">Naam *</label><input type="text" id="nc-n" placeholder="Ram Kumar"></div>
+            <div class="fc"><label class="lbl">Mobile</label><input type="tel" id="nc-m" placeholder="9876543210" maxlength="10"></div>
+            <div class="fc"><label class="lbl">GSTIN</label><input type="text" id="nc-g" placeholder="Optional"></div>
           </div>
-
-          <!-- Customers List -->
-          <div>
-            <div style="display:flex;gap:8px;margin-bottom:12px">
-              <input type="text" id="csl" placeholder="Customer search..." oninput="BK_APP.renderCustomers()" style="flex:1">
-              <button class="btn btn-g" onclick="BK_SYNC.exportCSV('customers')">📥 Export</button>
-            </div>
-            <div class="card" style="padding:0">
-              <div class="tbl-wrap">
-                <table class="tbl">
-                  <thead>
-                    <tr>
-                      <th>Naam</th><th>Mobile</th><th>Address</th>
-                      <th>Custom Rates</th><th>Due</th><th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="cbody">
-                    <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text3)">Loading...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div class="frow">
+            <div class="fc fc3"><label class="lbl">Address</label><input type="text" id="nc-a" placeholder="Optional"></div>
+            <div class="fc"><label class="lbl">Opening Due (₹)</label><input type="number" id="nc-d" placeholder="0" min="0"></div>
           </div>
+          <div style="margin-top:8px">
+            <div class="ctitle" style="margin-bottom:10px"><i class="ti ti-tag"></i> Party-wise Custom Rates</div>
+            <div id="crl"></div>
+            <button class="btn btn-g btn-sm" onclick="acrrow()" style="margin-top:6px">
+              <i class="ti ti-plus"></i> Product rate add karo
+            </button>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-p" onclick="savecust()"><i class="ti ti-check"></i> Customer Save Karo</button>
+            <button class="btn btn-g" onclick="clrcust()"><i class="ti ti-x"></i> Clear</button>
+          </div>
+          <div id="cm-msg" style="font-size:12px;margin-top:8px"></div>
         </div>
-      </div>
-
-      <!-- ========== PRODUCTS ========== -->
-      <div class="screen" id="sc-products">
-        <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start">
-
-          <!-- Add Product Form -->
-          <div class="card" style="position:sticky;top:70px">
-            <div class="ctitle">📦 Naya Product</div>
-            <div style="margin-bottom:8px">
-              <label class="lbl">Product Naam *</label>
-              <input type="text" id="np-n" placeholder="Item ka naam">
-            </div>
-            <div class="frow" style="margin-bottom:8px">
-              <div class="fc">
-                <label class="lbl">Rate *</label>
-                <input type="number" id="np-r" min="0" step="0.5" placeholder="0">
-              </div>
-              <div class="fc">
-                <label class="lbl">GST %</label>
-                <select id="np-g">
-                  <option value="0">0%</option>
-                  <option value="5">5%</option>
-                  <option value="12">12%</option>
-                  <option value="18" selected>18%</option>
-                  <option value="28">28%</option>
-                </select>
-              </div>
-            </div>
-            <div class="frow" style="margin-bottom:8px">
-              <div class="fc">
-                <label class="lbl">Unit</label>
-                <select id="np-u">
-                  <option>Pcs</option><option>Kg</option><option>Gram</option>
-                  <option>Litre</option><option>Meter</option><option>Box</option>
-                  <option>Dozen</option><option>Pack</option><option>Set</option>
-                </select>
-              </div>
-              <div class="fc">
-                <label class="lbl">Stock</label>
-                <input type="number" id="np-s" min="0" placeholder="0">
-              </div>
-            </div>
-            <div class="frow" style="margin-bottom:12px">
-              <div class="fc">
-                <label class="lbl">HSN Code</label>
-                <input type="text" id="np-h" placeholder="Optional">
-              </div>
-              <div class="fc">
-                <label class="lbl">Category</label>
-                <input type="text" id="np-cat" placeholder="Electronics...">
-              </div>
-            </div>
-            <div id="pm-msg" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
-            <button class="btn btn-p btn-full" onclick="BK_APP.saveProduct()">+ Save Product</button>
-          </div>
-
-          <!-- Products List -->
-          <div>
-            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-              <input type="text" id="psl" placeholder="Product search..." oninput="BK_APP.renderProducts()" style="flex:1">
-              <input type="text" id="pcat" placeholder="Category filter..." oninput="BK_APP.renderProducts()" style="width:150px">
-              <button class="btn btn-g" onclick="BK_SYNC.exportCSV('products')">📥 Export</button>
-            </div>
-            <div class="card" style="padding:0">
-              <div class="tbl-wrap">
-                <table class="tbl">
-                  <thead>
-                    <tr>
-                      <th>Product</th><th>Rate</th><th>GST</th>
-                      <th>Unit</th><th>HSN</th><th>Stock</th><th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="pbody">
-                    <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text3)">Loading...</td></tr>
-                  </tbody>
-                </table>
-              </div>
+        <div class="card">
+          <div class="ctitle" style="justify-content:space-between">
+            <span><i class="ti ti-users"></i> Customer List</span>
+            <div class="input-icon-wrap" style="max-width:220px">
+              <i class="ti ti-search"></i>
+              <input type="text" id="csl" placeholder="Khojo..." oninput="rcusts()" style="font-size:12px;padding:5px 8px 5px 32px">
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- ========== DUE LIST ========== -->
-      <div class="screen" id="sc-dues">
-        <div class="card" style="padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
-          <div style="font-size:14px;font-weight:600">Kul Outstanding Due:</div>
-          <div class="mono fw-700 text-red" id="due-total" style="font-size:20px">₹0</div>
-          <div class="ctitle-actions">
-            <button class="btn btn-g btn-sm" onclick="BK_SYNC.exportCSV('customers')">📥 Export</button>
-          </div>
-        </div>
-        <div class="card" style="padding:0">
-          <div class="tbl-wrap">
-            <table class="tbl">
-              <thead>
-                <tr><th>Customer</th><th>Mobile</th><th>Due Amount</th><th>Call</th><th>Actions</th></tr>
-              </thead>
-              <tbody id="due-body"></tbody>
+          <div class="tbl-scroll">
+            <table class="tbl" style="min-width:560px">
+              <thead><tr><th>Naam</th><th>Mobile</th><th>Custom Rates</th><th>Due</th><th>Actions</th></tr></thead>
+              <tbody id="cbody"></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ========== REPORTS ========== -->
-      <div class="screen" id="sc-reports">
-        <div id="reports-content">
-          <div style="text-align:center;padding:40px;color:var(--text3)">Loading reports...</div>
+      <!-- ===== PRODUCTS ===== -->
+      <div class="screen" id="sc-products">
+        <div class="card" style="margin-bottom:14px">
+          <div class="ctitle"><i class="ti ti-package"></i> Naya Product / Item</div>
+          <div class="frow">
+            <div class="fc fc2"><label class="lbl">Product Naam *</label><input type="text" id="np-n" placeholder="Pen, Notebook..."></div>
+            <div class="fc"><label class="lbl">Default Rate (₹) *</label><input type="number" id="np-r" placeholder="0" min="0" step="0.5"></div>
+            <div class="fc">
+              <label class="lbl">GST %</label>
+              <select id="np-g">
+                <option value="0">0%</option><option value="5">5%</option>
+                <option value="12">12%</option><option value="18" selected>18%</option><option value="28">28%</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fc">
+              <label class="lbl">Unit</label>
+              <select id="np-u"><option>Pcs</option><option>Kg</option><option>Gram</option><option>Litre</option><option>Metre</option><option>Box</option><option>Dozen</option></select>
+            </div>
+            <div class="fc"><label class="lbl">HSN Code</label><input type="text" id="np-h" placeholder="Optional"></div>
+            <div class="fc"><label class="lbl">Stock</label><input type="number" id="np-s" placeholder="0" min="0"></div>
+            <div class="fc"><label class="lbl">Min Stock Alert</label><input type="number" id="np-ms" placeholder="5" min="0"></div>
+          </div>
+          <div class="frow">
+            <div class="fc fc2"><label class="lbl">Category</label><input type="text" id="np-cat" placeholder="Stationery, Electronics..."></div>
+            <div class="fc fc2"><label class="lbl">Barcode</label><input type="text" id="np-bc" placeholder="Optional"></div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-p" onclick="saveprod()"><i class="ti ti-check"></i> Product Save Karo</button>
+            <button class="btn btn-g" onclick="clrprod()"><i class="ti ti-x"></i> Clear</button>
+          </div>
+          <div id="pm-msg" style="font-size:12px;margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <div class="ctitle" style="justify-content:space-between">
+            <span><i class="ti ti-boxes"></i> Product List</span>
+            <div class="input-icon-wrap" style="max-width:220px">
+              <i class="ti ti-search"></i>
+              <input type="text" id="psl" placeholder="Khojo..." oninput="rprods()" style="font-size:12px;padding:5px 8px 5px 32px">
+            </div>
+          </div>
+          <div class="tbl-scroll">
+            <table class="tbl" style="min-width:580px">
+              <thead><tr><th>Naam</th><th>Default Rate</th><th>GST%</th><th>Unit</th><th>Stock</th><th>Barcode</th><th>Actions</th></tr></thead>
+              <tbody id="pbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- ========== SETTINGS ========== -->
+      <!-- ===== DUE LIST ===== -->
+      <div class="screen" id="sc-dues">
+        <div class="card">
+          <div class="ctitle"><i class="ti ti-alert-circle"></i> Due wale customers</div>
+          <div class="tbl-scroll">
+            <table class="tbl" style="min-width:480px">
+              <thead><tr><th>Customer</th><th>Mobile</th><th>Total Due</th><th>Collect</th><th>New Bill</th></tr></thead>
+              <tbody id="duebody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SETTINGS ===== -->
       <div class="screen" id="sc-settings">
-        <!-- Settings Tabs -->
         <div class="stabs">
-          <div class="stab active" data-tab="shop" onclick="BK_APP.switchSettingsTab('shop')">🏪 Dukaan</div>
-          <div class="stab" data-tab="bank" onclick="BK_APP.switchSettingsTab('bank')">🏦 Bank</div>
-          <div class="stab" data-tab="theme" onclick="BK_APP.switchSettingsTab('theme')">🎨 Theme</div>
-          <div class="stab" data-tab="print" onclick="BK_APP.switchSettingsTab('print')">🖨 Print</div>
-          <div class="stab" data-tab="backup" onclick="BK_APP.switchSettingsTab('backup')">💾 Backup</div>
-          <div class="stab" data-tab="users" onclick="BK_APP.switchSettingsTab('users')">👤 Users</div>
-          <div class="stab" data-tab="pwa" onclick="BK_APP.switchSettingsTab('pwa')">📱 PWA</div>
+          <div class="stab active" onclick="stab('shop')"><i class="ti ti-building-store"></i> Dukaan</div>
+          <div class="stab" onclick="stab('bank')"><i class="ti ti-building-bank"></i> Bank</div>
+          <div class="stab" onclick="stab('theme')"><i class="ti ti-palette"></i> Theme</div>
+          <div class="stab" onclick="stab('logo')"><i class="ti ti-photo"></i> Logo &amp; QR</div>
+          <div class="stab" onclick="stab('backup')"><i class="ti ti-database"></i> Backup</div>
         </div>
 
-        <!-- Shop Info Panel -->
-        <div class="spanel active card" id="sp-shop">
-          <div class="ctitle">🏪 Dukaan / Business Info</div>
-          <div class="frow">
-            <div class="fc fc2">
-              <label class="lbl">Business Naam *</label>
-              <input type="text" id="s-sn" placeholder="Ram Stationery Store">
+        <!-- SHOP INFO -->
+        <div class="spanel active" id="sp-shop">
+          <div class="card">
+            <div class="ctitle"><i class="ti ti-building-store"></i> Dukaan / Business Information</div>
+            <div class="frow">
+              <div class="fc fc2"><label class="lbl">Business / Shop Naam *</label><input type="text" id="s-sn" placeholder="Ram General Store"></div>
+              <div class="fc"><label class="lbl">Tagline</label><input type="text" id="s-tg" placeholder="Quality Since 1990"></div>
             </div>
-            <div class="fc">
-              <label class="lbl">Bill Prefix</label>
-              <input type="text" id="s-bp" placeholder="BK" maxlength="5">
+            <div class="frow">
+              <div class="fc fc2"><label class="lbl">Address</label><input type="text" id="s-a1" placeholder="Shop No. 12, Market Road"></div>
+              <div class="fc"><label class="lbl">City</label><input type="text" id="s-ct" placeholder="Patna"></div>
             </div>
-          </div>
-          <div class="fc" style="margin-bottom:10px">
-            <label class="lbl">Tagline</label>
-            <input type="text" id="s-tg" placeholder="Quality products at best prices">
-          </div>
-          <div class="fc" style="margin-bottom:10px">
-            <label class="lbl">Address Line</label>
-            <input type="text" id="s-a1" placeholder="Shop no., Street...">
-          </div>
-          <div class="frow">
-            <div class="fc">
-              <label class="lbl">City</label>
-              <input type="text" id="s-ct" placeholder="Patna">
+            <div class="frow">
+              <div class="fc"><label class="lbl">State</label><input type="text" id="s-st" placeholder="Bihar"></div>
+              <div class="fc"><label class="lbl">PIN</label><input type="text" id="s-pn" placeholder="800001" maxlength="6"></div>
+              <div class="fc"><label class="lbl">Mobile</label><input type="tel" id="s-mb" placeholder="9876543210" maxlength="10"></div>
             </div>
-            <div class="fc">
-              <label class="lbl">State</label>
-              <input type="text" id="s-st" placeholder="Bihar">
+            <div class="frow">
+              <div class="fc"><label class="lbl">Email</label><input type="email" id="s-em" placeholder="shop@email.com"></div>
+              <div class="fc"><label class="lbl">GSTIN</label><input type="text" id="s-gs" placeholder="22AAAAA0000A1Z5"></div>
+              <div class="fc"><label class="lbl">Bill Prefix</label><input type="text" id="s-bp" placeholder="BK" maxlength="5"></div>
             </div>
-          </div>
-          <div class="frow">
-            <div class="fc">
-              <label class="lbl">Phone</label>
-              <input type="tel" id="s-pn" placeholder="Landline">
+            <div class="frow">
+              <div class="fc fc3"><label class="lbl">Bill Footer / Terms</label>
+                <textarea id="s-ft" rows="2" placeholder="Thank you! Goods once sold will not be returned."></textarea>
+              </div>
             </div>
-            <div class="fc">
-              <label class="lbl">Mobile</label>
-              <input type="tel" id="s-mb" placeholder="Mobile">
-            </div>
-            <div class="fc">
-              <label class="lbl">Email</label>
-              <input type="email" id="s-em" placeholder="shop@email.com">
-            </div>
+            <button class="btn btn-p" onclick="saveshop()"><i class="ti ti-check"></i> Save Dukaan Info</button>
+            <div id="sh-msg" style="font-size:12px;margin-top:8px"></div>
           </div>
-          <div class="fc" style="margin-bottom:10px">
-            <label class="lbl">GSTIN</label>
-            <input type="text" id="s-gs" placeholder="22AAAAA0000A1Z5">
-          </div>
-          <div class="fc" style="margin-bottom:12px">
-            <label class="lbl">Footer Text (bill mein)</label>
-            <input type="text" id="s-ft" placeholder="Thank you for your business!">
-          </div>
-          <div id="sh-msg" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
-          <button class="btn btn-p" onclick="BK_APP.saveShop()">💾 Shop Info Save Karo</button>
         </div>
 
-        <!-- Bank Panel -->
-        <div class="spanel card" id="sp-bank">
-          <div class="ctitle">🏦 Bank / Payment Details</div>
-          <div class="frow">
-            <div class="fc fc2">
-              <label class="lbl">Bank Naam</label>
-              <input type="text" id="b-hn" placeholder="State Bank of India">
+        <!-- BANK -->
+        <div class="spanel" id="sp-bank">
+          <div class="card">
+            <div class="ctitle"><i class="ti ti-building-bank"></i> Bank Account Details</div>
+            <div class="frow">
+              <div class="fc fc2"><label class="lbl">Account Holder Naam</label><input type="text" id="b-hn" placeholder="Ram Kumar"></div>
+              <div class="fc"><label class="lbl">Bank Naam</label><input type="text" id="b-bn" placeholder="State Bank of India"></div>
             </div>
-            <div class="fc">
-              <label class="lbl">Account Type</label>
-              <select id="b-at"><option>Savings</option><option>Current</option></select>
+            <div class="frow">
+              <div class="fc"><label class="lbl">Account Number</label><input type="text" id="b-an" placeholder="1234567890"></div>
+              <div class="fc"><label class="lbl">IFSC Code</label><input type="text" id="b-if" placeholder="SBIN0001234"></div>
             </div>
+            <div class="frow">
+              <div class="fc"><label class="lbl">Branch</label><input type="text" id="b-br" placeholder="Gandhi Maidan, Patna"></div>
+              <div class="fc"><label class="lbl">Account Type</label>
+                <select id="b-at"><option>Savings</option><option>Current</option><option>OD</option></select>
+              </div>
+            </div>
+            <div class="frow">
+              <div class="fc fc2"><label class="lbl">UPI ID</label><input type="text" id="b-ui" placeholder="shopname@upi"></div>
+              <div class="fc"><label class="lbl">UPI Mobile</label><input type="tel" id="b-um" placeholder="9876543210" maxlength="10"></div>
+            </div>
+            <div style="background:var(--accent-bg);border:1px solid #bfdbfe;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--accent-text);margin-bottom:12px">
+              <i class="ti ti-info-circle" style="vertical-align:-2px"></i> Yeh details bill PDF ke neeche print hongi aur QR ke saath dikhegi.
+            </div>
+            <button class="btn btn-p" onclick="savebank()"><i class="ti ti-check"></i> Save Bank Details</button>
+            <div id="bk-msg" style="font-size:12px;margin-top:8px"></div>
           </div>
-          <div class="frow">
-            <div class="fc fc2">
-              <label class="lbl">Account Holder Naam</label>
-              <input type="text" id="b-bn" placeholder="Ram Kumar">
-            </div>
-            <div class="fc">
-              <label class="lbl">Account Number</label>
-              <input type="text" id="b-an" placeholder="000123456789">
-            </div>
-          </div>
-          <div class="frow">
-            <div class="fc">
-              <label class="lbl">IFSC Code</label>
-              <input type="text" id="b-if" placeholder="SBIN0001234">
-            </div>
-            <div class="fc">
-              <label class="lbl">Branch</label>
-              <input type="text" id="b-br" placeholder="Patna Main">
-            </div>
-          </div>
-          <div class="fc" style="margin-bottom:8px">
-            <label class="lbl">UPI ID</label>
-            <input type="text" id="b-ui" placeholder="yourname@upi">
-          </div>
-          <div class="fc" style="margin-bottom:12px">
-            <label class="lbl">UPI Mobile</label>
-            <input type="tel" id="b-um" placeholder="Mobile on UPI">
-          </div>
-          <div id="bk-msg" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
-          <button class="btn btn-p" onclick="BK_APP.saveBank()">💾 Bank Details Save Karo</button>
         </div>
 
-        <!-- Theme Panel -->
-        <div class="spanel card" id="sp-theme">
-          <div class="ctitle">🎨 Invoice Theme</div>
-          <div class="ctitle" style="font-size:11px;margin-bottom:8px">Template Choose Karo</div>
-          <div class="tgrid" id="tgrid"></div>
-
-          <div class="ctitle" style="margin-top:16px">Accent Color</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
-            <div class="swatch active" data-c="#2563eb" style="background:#2563eb" onclick="BK_APP.pickColor(this)"></div>
-            <div class="swatch" data-c="#16a34a" style="background:#16a34a" onclick="BK_APP.pickColor(this)"></div>
-            <div class="swatch" data-c="#dc2626" style="background:#dc2626" onclick="BK_APP.pickColor(this)"></div>
-            <div class="swatch" data-c="#7c3aed" style="background:#7c3aed" onclick="BK_APP.pickColor(this)"></div>
-            <div class="swatch" data-c="#d97706" style="background:#d97706" onclick="BK_APP.pickColor(this)"></div>
-            <div class="swatch" data-c="#0891b2" style="background:#0891b2" onclick="BK_APP.pickColor(this)"></div>
-            <div class="swatch" data-c="#1f2937" style="background:#1f2937" onclick="BK_APP.pickColor(this)"></div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <label class="lbl" style="margin:0">Custom:</label>
-              <input type="color" id="ccolor" value="#2563eb" onchange="BK_APP.pickCustomColor(this.value)" style="width:36px;height:36px;padding:2px;border-radius:50%;cursor:pointer">
+        <!-- THEME -->
+        <div class="spanel" id="sp-theme">
+          <div class="card">
+            <div class="ctitle"><i class="ti ti-palette"></i> Bill PDF Theme</div>
+            <div class="tgrid" id="tgrid"></div>
+            <div style="margin-top:8px">
+              <label class="lbl" style="margin-bottom:8px">Accent Color</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                <div class="swatch" style="background:#2563eb" data-c="#2563eb" onclick="pcolor(this)" title="Blue"></div>
+                <div class="swatch" style="background:#16a34a" data-c="#16a34a" onclick="pcolor(this)" title="Green"></div>
+                <div class="swatch" style="background:#dc2626" data-c="#dc2626" onclick="pcolor(this)" title="Red"></div>
+                <div class="swatch" style="background:#7c3aed" data-c="#7c3aed" onclick="pcolor(this)" title="Purple"></div>
+                <div class="swatch" style="background:#d97706" data-c="#d97706" onclick="pcolor(this)" title="Amber"></div>
+                <div class="swatch" style="background:#0891b2" data-c="#0891b2" onclick="pcolor(this)" title="Cyan"></div>
+                <div class="swatch" style="background:#be185d" data-c="#be185d" onclick="pcolor(this)" title="Pink"></div>
+                <div class="swatch" style="background:#1f2937" data-c="#1f2937" onclick="pcolor(this)" title="Dark"></div>
+                <div class="swatch" style="background:#065f46" data-c="#065f46" onclick="pcolor(this)" title="Teal"></div>
+              </div>
             </div>
+            <div style="margin-top:12px">
+              <label class="lbl">Custom Color</label>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                <input type="color" id="ccolor" style="width:50px;height:38px;padding:2px;cursor:pointer;border-radius:4px" onchange="pcustc(this.value)">
+                <span style="font-size:12px;color:var(--text2)">Ya apna custom color choose karo</span>
+              </div>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-p" onclick="savetheme()"><i class="ti ti-check"></i> Theme Save Karo</button>
+              <button class="btn btn-g" onclick="prevbill()"><i class="ti ti-eye"></i> Preview Bill</button>
+            </div>
+            <div id="th-msg" style="font-size:12px;margin-top:8px"></div>
           </div>
+        </div>
 
-          <!-- Logo & QR Upload -->
-          <div class="frow" style="margin-top:8px">
-            <div class="fc">
-              <div class="ctitle">Logo Upload</div>
+        <!-- LOGO & QR -->
+        <div class="spanel" id="sp-logo">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div class="card">
+              <div class="ctitle"><i class="ti ti-photo"></i> Shop Logo</div>
               <div class="upbox">
-                <input type="file" accept="image/*" onchange="BK_APP.uploadLogo(this)">
-                <div>📷 Logo click karke upload karo</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:4px">Max 2MB · PNG, JPG</div>
+                <input type="file" accept="image/*" onchange="upllogo(this)">
+                <div><div style="font-size:32px;margin-bottom:8px">🖼</div>
+                  <div style="font-weight:600;color:var(--text2)">Logo upload karo</div>
+                  <div style="font-size:12px;color:var(--text3);margin-top:4px">PNG, JPG — max 2MB</div>
+                </div>
               </div>
-              <div id="logo-lbl" style="display:none;font-size:11px;color:var(--green-text);margin-top:4px">✓ Logo uploaded</div>
-              <img id="logo-prev" style="display:none;margin-top:8px" class="uprev">
-              <button id="logo-rm" class="btn btn-d btn-sm" style="display:none;margin-top:6px" onclick="BK_APP.removeLogo()">🗑 Remove Logo</button>
+              <div style="margin-top:12px;text-align:center">
+                <img id="logo-prev" class="uprev" style="width:120px;height:60px" alt="Logo">
+                <div id="logo-lbl" class="hidden" style="font-size:12px;color:var(--green-text);margin-top:6px"><i class="ti ti-check"></i> Logo uploaded</div>
+                <button id="logo-rm" class="btn btn-sm btn-d hidden" style="margin-top:8px" onclick="rmlogo()"><i class="ti ti-trash"></i> Remove</button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:10px;padding:8px;background:var(--surface2);border-radius:var(--rs)">
+                <i class="ti ti-info-circle"></i> Logo bill ke top-left mein print hoga. Best: 200×80px
+              </div>
             </div>
-            <div class="fc">
-              <div class="ctitle">Payment QR Code</div>
+            <div class="card">
+              <div class="ctitle"><i class="ti ti-qrcode"></i> Payment QR Code</div>
               <div class="upbox">
-                <input type="file" accept="image/*" onchange="BK_APP.uploadQR(this)">
-                <div>📷 QR Code upload karo</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:4px">UPI QR · PNG, JPG</div>
+                <input type="file" accept="image/*" onchange="uplqr(this)">
+                <div><div style="font-size:32px;margin-bottom:8px">📱</div>
+                  <div style="font-weight:600;color:var(--text2)">UPI QR upload karo</div>
+                  <div style="font-size:12px;color:var(--text3);margin-top:4px">GPay, PhonePe, Paytm</div>
+                </div>
               </div>
-              <div id="qr-lbl" style="display:none;font-size:11px;color:var(--green-text);margin-top:4px">✓ QR uploaded</div>
-              <img id="qr-prev" style="display:none;margin-top:8px" class="uprev">
-              <button id="qr-rm" class="btn btn-d btn-sm" style="display:none;margin-top:6px" onclick="BK_APP.removeQR()">🗑 Remove QR</button>
-            </div>
-          </div>
-
-          <div id="th-msg" style="font-size:12px;min-height:16px;margin-top:10px"></div>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn btn-p" onclick="BK_APP.saveTheme()">💾 Theme Save Karo</button>
-            <button class="btn btn-g" onclick="BK_APP.previewBill()">👁 Preview Bill</button>
-          </div>
-        </div>
-
-        <!-- Print Settings Panel -->
-        <div class="spanel card" id="sp-print">
-          <div class="ctitle">🖨 Print / Invoice Options</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-              <input type="checkbox" id="pr-lo" style="width:16px;height:16px"> Show Logo
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-              <input type="checkbox" id="pr-qr" style="width:16px;height:16px"> Show QR Code
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-              <input type="checkbox" id="pr-bk" style="width:16px;height:16px"> Bank Details
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-              <input type="checkbox" id="pr-gs" style="width:16px;height:16px"> GSTIN
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-              <input type="checkbox" id="pr-ft" style="width:16px;height:16px"> Footer
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-              <input type="checkbox" id="pr-sg" style="width:16px;height:16px"> Signature Box
-            </label>
-          </div>
-          <div id="pr-msg" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-p" onclick="BK_APP.savePrint()">💾 Save Settings</button>
-            <button class="btn btn-g" onclick="BK_APP.previewBill()">👁 Preview</button>
-          </div>
-        </div>
-
-        <!-- Backup Panel -->
-        <div class="spanel card" id="sp-backup">
-          <div class="ctitle">💾 Data Backup & Restore</div>
-
-          <div class="info-box" style="margin-bottom:16px">
-            Aapka data IndexedDB mein safe hai. Ek extra backup file bhi zaroor rakhein!
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-            <div class="card" style="margin:0;background:var(--green-bg);border-color:var(--green-border)">
-              <div style="font-weight:700;margin-bottom:8px;color:var(--green-text)">📤 Export Backup</div>
-              <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Poora database JSON file mein download karo</p>
-              <div style="display:flex;gap:6px;flex-wrap:wrap">
-                <button class="btn btn-s btn-sm" onclick="BK_SYNC.exportDatabase(false)">📥 Export (Plain)</button>
-                <button class="btn btn-s btn-sm" onclick="BK_SYNC.exportDatabase(true)">🔐 Export (Encrypted)</button>
+              <div style="margin-top:12px;text-align:center">
+                <img id="qr-prev" class="uprev" style="width:100px;height:100px" alt="QR">
+                <div id="qr-lbl" class="hidden" style="font-size:12px;color:var(--green-text);margin-top:6px"><i class="ti ti-check"></i> QR uploaded</div>
+                <button id="qr-rm" class="btn btn-sm btn-d hidden" style="margin-top:8px" onclick="rmqr()"><i class="ti ti-trash"></i> Remove</button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:10px;padding:8px;background:var(--surface2);border-radius:var(--rs)">
+                <i class="ti ti-info-circle"></i> QR bill ke payment section mein print hoga.
               </div>
             </div>
-            <div class="card" style="margin:0;background:var(--accent-bg);border-color:var(--accent-border)">
-              <div style="font-weight:700;margin-bottom:8px;color:var(--accent-text)">📥 Import / Restore</div>
-              <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Backup file se restore karo</p>
-              <label class="btn btn-p btn-sm" style="cursor:pointer">
-                📂 File Choose Karo
-                <input type="file" accept=".json" style="display:none" onchange="BK_SYNC.importDatabase(this.files[0])">
-              </label>
-            </div>
           </div>
-
-          <div class="frow">
-            <div class="fc">
-              <button class="btn btn-g btn-full" onclick="BK_SYNC.exportCSV('bills')">📊 Bills CSV Export</button>
+          <div class="card">
+            <div class="ctitle"><i class="ti ti-printer"></i> Bill mein kya print ho?</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="pr-lo" checked> Logo print karo</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="pr-qr" checked> QR Code print karo</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="pr-bk" checked> Bank details print karo</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="pr-gs" checked> GSTIN print karo</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="pr-ft" checked> Footer / Terms</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="pr-sg"> Authorized Signature</label>
             </div>
-            <div class="fc">
-              <button class="btn btn-g btn-full" onclick="BK_SYNC.exportCSV('customers')">👥 Customers CSV</button>
-            </div>
-            <div class="fc">
-              <button class="btn btn-g btn-full" onclick="BK_SYNC.exportCSV('products')">📦 Products CSV</button>
-            </div>
+            <button class="btn btn-p" style="margin-top:14px" onclick="savepr()"><i class="ti ti-check"></i> Print Settings Save</button>
+            <div id="pr-msg" style="font-size:12px;margin-top:8px"></div>
           </div>
-
-          <div id="last-backup-info" style="font-size:11px;color:var(--text3);margin-top:12px"></div>
-
-          <hr class="divider">
-          <div style="font-weight:600;margin-bottom:8px;color:var(--red-text)">⚠ Danger Zone</div>
-          <button class="btn btn-d btn-sm" onclick="if(confirm('SARE DATA delete ho jayenge! Pakka?')){['bills','customers','products','payments','syncQueue'].forEach(s=>BK_DB.clear(s));BK_APP.toast('Data cleared!','red');location.reload()}">
-            🗑 Sab Data Delete Karo
-          </button>
         </div>
 
-        <!-- Users Panel -->
-        <div class="spanel card" id="sp-users">
-          <div class="ctitle">
-            👤 Users
-            <div class="ctitle-actions">
-              <button class="btn btn-p btn-sm" onclick="BK_APP.openModal('m-adduser')">+ User Add Karo</button>
+        <!-- BACKUP -->
+        <div class="spanel" id="sp-backup">
+          <div class="card">
+            <div class="ctitle"><i class="ti ti-database-export"></i> Data Backup &amp; Restore</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div style="background:var(--green-bg);border:1px solid #bbf7d0;border-radius:var(--r);padding:16px">
+                <div style="font-weight:600;margin-bottom:6px;color:var(--green-text)"><i class="ti ti-download"></i> Export / Backup</div>
+                <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Poora data ek JSON file mein download karo. Safe jagah save karo.</div>
+                <button class="btn btn-s btn-full" onclick="exportDB()"><i class="ti ti-download"></i> Backup Download Karo</button>
+              </div>
+              <div style="background:var(--accent-bg);border:1px solid #bfdbfe;border-radius:var(--r);padding:16px">
+                <div style="font-weight:600;margin-bottom:6px;color:var(--accent-text)"><i class="ti ti-upload"></i> Import / Restore</div>
+                <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Pehle ka backup load karo. Existing data replace ho jaayega.</div>
+                <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(this)">
+                <button class="btn btn-p btn-full" onclick="importDB()"><i class="ti ti-upload"></i> Backup Import Karo</button>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:12px;background:var(--amber-bg);border:1px solid #fde68a;border-radius:var(--rs);font-size:12px;color:var(--amber-text)">
+              <i class="ti ti-alert-triangle" style="vertical-align:-2px"></i>
+              <strong> Important:</strong> Data sirf is device ke browser mein save hai (IndexedDB).
+              Browser clear karne se data ja sakta hai — <strong>regular backup lena zaroori hai!</strong>
+              Backup file safe jagah rakhein — Google Drive, WhatsApp, Email.
+            </div>
+            <div style="margin-top:12px">
+              <div style="font-weight:600;margin-bottom:8px;font-size:13px">Database Info</div>
+              <button class="btn btn-g btn-sm" onclick="showDbInfo()"><i class="ti ti-info-circle"></i> DB Info dekho</button>
+              <div id="db-info" style="font-size:12px;color:var(--text2);margin-top:8px"></div>
             </div>
           </div>
-          <div id="users-list"></div>
-          <hr class="divider">
-          <div class="ctitle" style="margin-top:8px">Password Change Karo</div>
-          <div class="frow">
-            <div class="fc">
-              <label class="lbl">Purana Password</label>
-              <input type="password" id="cp-old" placeholder="Current password">
-            </div>
-            <div class="fc">
-              <label class="lbl">Naya Password</label>
-              <input type="password" id="cp-new" placeholder="New password">
-            </div>
-          </div>
-          <button class="btn btn-p btn-sm" onclick="(async()=>{try{await BK_AUTH.changePassword(document.getElementById('cp-old').value,document.getElementById('cp-new').value);BK_APP.toast('Password changed!','green')}catch(e){BK_APP.toast(e.message,'red')}})()">
-            🔐 Password Change Karo
-          </button>
-          <hr class="divider">
-          <button class="btn btn-d" onclick="if(confirm('Logout karein?'))BK_AUTH.logout()">🚪 Logout</button>
         </div>
 
-        <!-- PWA Panel -->
-        <div class="spanel card" id="sp-pwa">
-          <div class="ctitle">📱 PWA / App Info</div>
-          <div class="info-box" style="margin-bottom:16px">
-            BillKaro ek Progressive Web App hai. Isko apne phone ya computer par install karo — bilkul native app jaisa lagega!
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-            <div class="card" style="margin:0">
-              <div style="font-size:24px;margin-bottom:6px">📱</div>
-              <div style="font-weight:600;margin-bottom:4px">Android / iOS</div>
-              <div style="font-size:12px;color:var(--text3)">Browser mein "Add to Home Screen" option use karo</div>
-            </div>
-            <div class="card" style="margin:0">
-              <div style="font-size:24px;margin-bottom:6px">💻</div>
-              <div style="font-weight:600;margin-bottom:4px">Desktop (Chrome)</div>
-              <div style="font-size:12px;color:var(--text3)">Address bar ke side mein install icon click karo</div>
-            </div>
-          </div>
-          <button class="btn btn-p btn-lg btn-full" onclick="BK_APP.installPWA()" style="margin-bottom:12px">
-            📲 Install BillKaro App
-          </button>
-          <div style="font-size:12px;color:var(--text3);text-align:center">
-            Service Worker Status: <span id="sw-status" style="font-weight:600;color:var(--green-text)">Checking...</span>
-          </div>
-          <script>
-            if('serviceWorker' in navigator){
-              navigator.serviceWorker.ready.then(()=>{
-                const el=document.getElementById('sw-status');
-                if(el)el.textContent='✓ Active';
-              }).catch(()=>{
-                const el=document.getElementById('sw-status');
-                if(el){el.textContent='Not Active';el.style.color='var(--red-text)';}
-              });
-            }
-          </script>
-        </div>
-      </div>
-
+      </div><!-- /settings -->
     </div><!-- /content -->
-  </main><!-- /main -->
+  </div><!-- /main -->
+</div><!-- /app -->
 
-  <!-- ===== BOTTOM NAV (mobile) ===== -->
-  <div class="bottom-nav">
-    <div class="bn-items">
-      <div class="bn-item active" data-screen="dashboard" onclick="BK_APP.navigate('dashboard')">
-        <div class="bn-icon">📊</div><div>Home</div>
-      </div>
-      <div class="bn-item" data-screen="billing" onclick="BK_APP.navigate('billing')">
-        <div class="bn-icon">🧾</div><div>Bill</div>
-      </div>
-      <div class="bn-item" data-screen="bills" onclick="BK_APP.navigate('bills')">
-        <div class="bn-icon">📋</div><div>Bills</div>
-      </div>
-      <div class="bn-item" data-screen="dues" onclick="BK_APP.navigate('dues')">
-        <div class="bn-icon">💰</div><div>Due</div>
-      </div>
-      <div class="bn-item" data-screen="settings" onclick="BK_APP.navigate('settings')">
-        <div class="bn-icon">⚙️</div><div>Settings</div>
-      </div>
+<!-- Mobile bottom nav -->
+<nav class="bottom-nav">
+  <div class="bnav-items">
+    <div class="bnav-item active" data-screen="dashboard" onclick="go('dashboard')"><i class="ti ti-layout-dashboard"></i><span>Home</span></div>
+    <div class="bnav-item" data-screen="billing" onclick="go('billing')"><i class="ti ti-file-plus"></i><span>Bill</span></div>
+    <div class="bnav-item" data-screen="bills" onclick="go('bills')"><i class="ti ti-files"></i><span>Bills</span></div>
+    <div class="bnav-item" data-screen="dues" onclick="go('dues')"><i class="ti ti-alert-circle"></i><span>Due</span></div>
+    <div class="bnav-item" data-screen="settings" onclick="go('settings')"><i class="ti ti-settings"></i><span>Settings</span></div>
+  </div>
+</nav>
+
+<!-- Install banner -->
+<div id="install-banner">
+  <div class="install-inner">
+    <p>📱 BillKaro ko apne phone par install karo — app ki tarah kaam karega!</p>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4)" onclick="installApp()">Install Karo</button>
+      <button class="btn btn-sm" style="background:transparent;color:rgba(255,255,255,0.7);border:none" onclick="document.getElementById('install-banner').classList.remove('show')">✕</button>
     </div>
   </div>
-
-</div><!-- /app-wrapper -->
-
-<!-- ===== PWA INSTALL BANNER ===== -->
-<div id="install-banner">
-  <div class="ib-text">
-    <div class="ib-title">📲 BillKaro Install Karo</div>
-    <div class="ib-desc">Offline bhi kaam karega · Android app jaisa</div>
-  </div>
-  <button class="btn" style="background:white;color:var(--accent);font-weight:700" onclick="BK_APP.installPWA()">Install</button>
-  <button class="btn" style="background:rgba(255,255,255,0.2);color:white" onclick="BK_APP.dismissInstall()">✕</button>
 </div>
 
-<!-- ===== TOAST ===== -->
+<!-- MODALS -->
+
+<!-- Edit Customer -->
+<div class="mb" id="m-ecust"><div class="modal">
+  <div class="mtitle">Customer Edit Karo <button class="modal-close" onclick="cm('m-ecust')"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="ec-id">
+  <div class="frow"><div class="fc"><label class="lbl">Naam</label><input id="ec-n"></div><div class="fc"><label class="lbl">Mobile</label><input id="ec-m" maxlength="10"></div></div>
+  <div class="frow"><div class="fc fc2"><label class="lbl">Address</label><input id="ec-a"></div><div class="fc"><label class="lbl">GSTIN</label><input id="ec-g"></div></div>
+  <div style="margin-top:10px">
+    <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Custom Rates</div>
+    <div id="ec-crl"></div>
+    <button class="btn btn-g btn-sm" onclick="aecrow()" style="margin-top:6px"><i class="ti ti-plus"></i> Add rate</button>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn btn-g" onclick="cm('m-ecust')">Cancel</button>
+    <button class="btn btn-p" onclick="updcust()"><i class="ti ti-check"></i> Save</button>
+  </div>
+</div></div>
+
+<!-- Edit Product -->
+<div class="mb" id="m-eprod"><div class="modal">
+  <div class="mtitle">Product Edit Karo <button class="modal-close" onclick="cm('m-eprod')"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="ep-id">
+  <div class="frow"><div class="fc fc2"><label class="lbl">Naam</label><input id="ep-n"></div><div class="fc"><label class="lbl">Rate</label><input type="number" id="ep-r" min="0" step="0.5"></div></div>
+  <div class="frow">
+    <div class="fc"><label class="lbl">GST%</label><select id="ep-g"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></div>
+    <div class="fc"><label class="lbl">Unit</label><select id="ep-u"><option>Pcs</option><option>Kg</option><option>Gram</option><option>Litre</option><option>Metre</option><option>Box</option><option>Dozen</option></select></div>
+    <div class="fc"><label class="lbl">Stock</label><input type="number" id="ep-s" min="0"></div>
+  </div>
+  <div class="frow">
+    <div class="fc"><label class="lbl">Min Stock</label><input type="number" id="ep-ms" min="0"></div>
+    <div class="fc"><label class="lbl">Category</label><input id="ep-cat"></div>
+    <div class="fc"><label class="lbl">Barcode</label><input id="ep-bc"></div>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn btn-g" onclick="cm('m-eprod')">Cancel</button>
+    <button class="btn btn-p" onclick="updprod()"><i class="ti ti-check"></i> Save</button>
+  </div>
+</div></div>
+
+<!-- Bill Detail -->
+<div class="mb" id="m-bill"><div class="modal" style="width:640px">
+  <div id="bill-dc"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+    <button class="btn btn-g" onclick="cm('m-bill')"><i class="ti ti-x"></i> Close</button>
+    <button class="btn btn-g" onclick="wab()"><i class="ti ti-brand-whatsapp" style="color:#25D366"></i> WhatsApp</button>
+    <button class="btn btn-g" onclick="pdfb()"><i class="ti ti-file-pdf" style="color:var(--red-text)"></i> PDF Save</button>
+    <button class="btn btn-p" onclick="printb()"><i class="ti ti-printer"></i> Print</button>
+  </div>
+</div></div>
+
+<!-- Collect Due -->
+<div class="mb" id="m-coll"><div class="modal" style="width:380px">
+  <div class="mtitle">Due Collect Karo <button class="modal-close" onclick="cm('m-coll')"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="col-cid">
+  <div id="col-info" style="margin-bottom:12px;font-size:13px;color:var(--text2)"></div>
+  <div class="frow">
+    <div class="fc"><label class="lbl">Amount (₹)</label><input type="number" id="col-a" min="0" placeholder="0"></div>
+    <div class="fc"><label class="lbl">Mode</label><select id="col-m"><option>Cash</option><option>UPI</option><option>Bank</option></select></div>
+  </div>
+  <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn btn-g" onclick="cm('m-coll')">Cancel</button>
+    <button class="btn btn-s" onclick="docoll()"><i class="ti ti-check"></i> Confirm Collect</button>
+  </div>
+</div></div>
+
 <div id="toast"></div>
 
-<!-- ========== MODALS ========== -->
+<!-- hidden class helper -->
+<style>.hidden{display:none!important}</style>
 
-<!-- Bill Preview Modal -->
-<div class="mb" id="m-bill">
-  <div class="modal" style="width:700px;max-width:96vw;max-height:92vh">
-    <div class="mtitle">
-      🧾 Bill Preview
-      <div class="mclose" onclick="BK_APP.closeModal('m-bill')">×</div>
-    </div>
-    <div id="bill-dc" style="margin-bottom:12px"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-p" onclick="document.getElementById('bill-frame')?.contentWindow?.print()">🖨 Print (A4)</button>
-      <button class="btn btn-g" id="btn-thermal" onclick="BK_APP.closeModal('m-bill');BK_APP.toast('Thermal print ke liye bill list mein jaiye','amber')">🖨 Thermal Print</button>
-      <button class="btn btn-g" id="btn-share-bill" onclick="BK_APP.closeModal('m-bill')">📤 Share</button>
-      <button class="btn btn-g" onclick="BK_APP.closeModal('m-bill')">Close</button>
-    </div>
-  </div>
-</div>
+<!-- External libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 
-<!-- Customer Ledger Modal -->
-<div class="mb" id="m-ledger">
-  <div class="modal" style="width:650px;max-width:96vw">
-    <div class="mtitle" id="ledger-title">📒 Ledger <div class="mclose" onclick="BK_APP.closeModal('m-ledger')">×</div></div>
-    <div id="ledger-content"></div>
-  </div>
-</div>
-
-<!-- Edit Customer Modal -->
-<div class="mb" id="m-ecust">
-  <div class="modal" style="width:520px;max-width:96vw">
-    <div class="mtitle">✏️ Customer Edit Karo <div class="mclose" onclick="BK_APP.closeModal('m-ecust')">×</div></div>
-    <input type="hidden" id="ec-id">
-    <div class="frow">
-      <div class="fc fc2">
-        <label class="lbl">Naam</label>
-        <input type="text" id="ec-n">
-      </div>
-      <div class="fc">
-        <label class="lbl">Mobile</label>
-        <input type="tel" id="ec-m" maxlength="10">
-      </div>
-    </div>
-    <div class="frow">
-      <div class="fc">
-        <label class="lbl">Address</label>
-        <input type="text" id="ec-a">
-      </div>
-      <div class="fc">
-        <label class="lbl">GSTIN</label>
-        <input type="text" id="ec-g">
-      </div>
-    </div>
-    <hr class="divider">
-    <div class="ctitle">
-      Custom Rates (Optional)
-      <div class="ctitle-actions">
-        <button class="btn btn-g btn-sm" onclick="BK_APP.addEditCustomRateRow()">+ Add Rate</button>
-      </div>
-    </div>
-    <div id="ec-crl" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-s btn-full" onclick="BK_APP.updateCustomer()">💾 Update Customer</button>
-      <button class="btn btn-g" onclick="BK_APP.closeModal('m-ecust')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Collect Due Modal -->
-<div class="mb" id="m-coll">
-  <div class="modal" style="width:400px;max-width:96vw">
-    <div class="mtitle">💰 Due Collect Karo <div class="mclose" onclick="BK_APP.closeModal('m-coll')">×</div></div>
-    <input type="hidden" id="col-cid">
-    <div id="col-info" style="padding:10px 12px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:6px;font-size:13px;margin-bottom:12px"></div>
-    <div class="frow">
-      <div class="fc fc2">
-        <label class="lbl">Collection Amount *</label>
-        <input type="number" id="col-a" min="0" step="0.5" placeholder="0">
-      </div>
-      <div class="fc">
-        <label class="lbl">Mode</label>
-        <select id="col-m">
-          <option>Cash</option><option>UPI</option><option>Card</option>
-          <option>Cheque</option><option>Bank Transfer</option>
-        </select>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn btn-s btn-full btn-lg" onclick="BK_APP.doCollect()">✓ Collect Karo</button>
-      <button class="btn btn-g" onclick="BK_APP.closeModal('m-coll')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Edit Product Modal -->
-<div class="mb" id="m-eprod">
-  <div class="modal" style="width:460px;max-width:96vw">
-    <div class="mtitle">✏️ Product Edit Karo <div class="mclose" onclick="BK_APP.closeModal('m-eprod')">×</div></div>
-    <input type="hidden" id="ep-id">
-    <div class="frow">
-      <div class="fc fc2">
-        <label class="lbl">Naam</label>
-        <input type="text" id="ep-n">
-      </div>
-      <div class="fc">
-        <label class="lbl">Rate</label>
-        <input type="number" id="ep-r" min="0" step="0.5">
-      </div>
-    </div>
-    <div class="frow">
-      <div class="fc">
-        <label class="lbl">GST %</label>
-        <select id="ep-g">
-          <option value="0">0%</option><option value="5">5%</option>
-          <option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
-        </select>
-      </div>
-      <div class="fc">
-        <label class="lbl">Unit</label>
-        <select id="ep-u">
-          <option>Pcs</option><option>Kg</option><option>Gram</option>
-          <option>Litre</option><option>Meter</option><option>Box</option><option>Pack</option>
-        </select>
-      </div>
-      <div class="fc">
-        <label class="lbl">Stock</label>
-        <input type="number" id="ep-s" min="0">
-      </div>
-    </div>
-    <div class="frow">
-      <div class="fc">
-        <label class="lbl">HSN</label>
-        <input type="text" id="ep-h">
-      </div>
-      <div class="fc">
-        <label class="lbl">Category</label>
-        <input type="text" id="ep-cat">
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn btn-s btn-full" onclick="BK_APP.updateProduct()">💾 Update</button>
-      <button class="btn btn-g" onclick="BK_APP.closeModal('m-eprod')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Add User Modal -->
-<div class="mb" id="m-adduser">
-  <div class="modal" style="width:420px;max-width:96vw">
-    <div class="mtitle">👤 Naya User Add Karo <div class="mclose" onclick="BK_APP.closeModal('m-adduser')">×</div></div>
-    <div class="fc" style="margin-bottom:10px">
-      <label class="lbl">Naam *</label>
-      <input type="text" id="nu-n" placeholder="User naam">
-    </div>
-    <div class="frow">
-      <div class="fc">
-        <label class="lbl">Email</label>
-        <input type="email" id="nu-e" placeholder="email@domain.com">
-      </div>
-      <div class="fc">
-        <label class="lbl">Mobile</label>
-        <input type="tel" id="nu-m" placeholder="10-digit" maxlength="10">
-      </div>
-    </div>
-    <div class="frow">
-      <div class="fc">
-        <label class="lbl">Password</label>
-        <input type="password" id="nu-p" placeholder="Min 6 chars">
-      </div>
-      <div class="fc">
-        <label class="lbl">Role</label>
-        <select id="nu-r">
-          <option value="user">User (Billing)</option>
-          <option value="viewer">Viewer (Read Only)</option>
-          <option value="admin">Admin (Full Access)</option>
-        </select>
-      </div>
-    </div>
-    <div id="nu-msg" style="font-size:12px;min-height:16px;margin:8px 0"></div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn btn-p btn-full" onclick="(async()=>{try{await BK_AUTH.registerUser({name:document.getElementById('nu-n').value,email:document.getElementById('nu-e').value,mobile:document.getElementById('nu-m').value,password:document.getElementById('nu-p').value,role:document.getElementById('nu-r').value});BK_APP.closeModal('m-adduser');BK_APP.renderUsersPanel();BK_APP.toast('User added!','green')}catch(e){document.getElementById('nu-msg').textContent=e.message;document.getElementById('nu-msg').style.color='var(--red-text)'}})()">✓ User Add Karo</button>
-      <button class="btn btn-g" onclick="BK_APP.closeModal('m-adduser')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Profile Modal -->
-<div class="mb" id="m-profile">
-  <div class="modal" style="width:380px;max-width:96vw">
-    <div class="mtitle">👤 Profile <div class="mclose" onclick="BK_APP.closeModal('m-profile')">×</div></div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn btn-g btn-full" onclick="BK_APP.closeModal('m-profile');BK_APP.navigate('settings');setTimeout(()=>BK_APP.switchSettingsTab('users'),200)">⚙️ Account Settings</button>
-      <button class="btn btn-g btn-full" onclick="BK_SYNC.exportDatabase(false)">📤 Data Export</button>
-      <button class="btn btn-g btn-full" onclick="BK_APP.installPWA()">📲 App Install Karo</button>
-      <hr class="divider">
-      <button class="btn btn-d btn-full" onclick="if(confirm('Logout karein?'))BK_AUTH.logout()">🚪 Logout</button>
-    </div>
-  </div>
-</div>
-
-<!-- Custom Rate Row style -->
-<style>
-.crrow { display:flex; align-items:center; gap:8px; padding:4px 0; }
-</style>
-
-<!-- ===== SCRIPTS ===== -->
+<!-- App scripts -->
 <script src="js/db.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/sync.js"></script>
 <script src="js/pdf.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/billing.js"></script>
 <script src="js/app.js"></script>
 
-<!-- Show install button when PWA prompt fires -->
 <script>
-  window.addEventListener('beforeinstallprompt', () => {
-    const btn = document.getElementById('install-btn');
-    if (btn) btn.style.display = 'inline-flex';
-  });
-  window.addEventListener('appinstalled', () => {
-    const btn = document.getElementById('install-btn');
-    if (btn) btn.style.display = 'none';
-  });
+// DB info
+async function showDbInfo() {
+  const prods = await BKDb.getAll('products');
+  const custs = await BKDb.getAll('customers');
+  const bills = await BKDb.getAll('bills');
+  document.getElementById('db-info').innerHTML = `
+    Products: ${prods.length} | Customers: ${custs.length} | Bills: ${bills.length}<br>
+    Storage: IndexedDB (${navigator.storage ? 'persistent' : 'session'})<br>
+    PWA: ${window.matchMedia('(display-mode: standalone)').matches ? 'Installed ✓' : 'Browser mode'}
+  `;
+}
+// Online dot
+window.addEventListener('online', () => { document.getElementById('online-dot').style.background = 'var(--green)'; });
+window.addEventListener('offline', () => { document.getElementById('online-dot').style.background = 'var(--red)'; });
 </script>
-
 </body>
 </html>
